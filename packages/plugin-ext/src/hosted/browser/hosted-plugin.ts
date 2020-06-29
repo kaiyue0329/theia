@@ -61,6 +61,7 @@ import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import URI from '@theia/core/lib/common/uri';
 import { FrontendApplicationConfigProvider } from '@theia/core/lib/browser/frontend-application-config-provider';
 import { environment } from '@theia/application-package/lib/environment';
+import { JsonSchemaStore } from '@theia/core/lib/browser/json-schema-store';
 
 export type PluginHost = 'frontend' | string;
 export type DebugActivationEvent = 'onDebugResolve' | 'onDebugInitialConfigurations' | 'onDebugAdapterProtocolTracker';
@@ -146,6 +147,9 @@ export class HostedPluginSupport {
 
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
+
+    @inject(JsonSchemaStore)
+    protected readonly jsonSchemaStore: JsonSchemaStore;
 
     private theiaReadyPromise: Promise<any>;
 
@@ -462,7 +466,8 @@ export class HostedPluginSupport {
                 webview: {
                     webviewResourceRoot,
                     webviewCspSource
-                }
+                },
+                jsonValidation: this.jsonSchemaStore.getJsonSchemaConfigurations()
             });
             if (toDisconnect.disposed) {
                 return undefined;

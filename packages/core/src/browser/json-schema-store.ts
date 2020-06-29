@@ -14,61 +14,40 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import debounce = require('lodash.debounce');
-
-import { injectable, inject } from 'inversify';
-import { InMemoryResources } from '../common/resource';
-import { Disposable, DisposableCollection } from '../common/disposable';
-import { Emitter } from '../common/event';
-import URI from '../common/uri';
+import { injectable, inject, named } from 'inversify';
+import { ContributionProvider } from '../common/contribution-provider';
+import { FrontendApplicationContribution } from './frontend-application';
 
 export interface JsonSchemaConfiguration {
-    url: string
-    fileMatch: string[]
+    fileMatch: string | string[];
+    url: string;
+}
+
+export const JsonSchemaContribution = Symbol('JsonSchemaContribution');
+export interface JsonSchemaContribution {
+    registerSchemas(store: JsonSchemaStore): void
 }
 
 @injectable()
-export class JsonSchemaStore {
+export class JsonSchemaStore implements FrontendApplicationContribution {
 
-    @inject(InMemoryResources)
-    protected readonly inMemoryResources: InMemoryResources;
+    @inject(ContributionProvider) @named(JsonSchemaContribution)
+    protected readonly contributions: ContributionProvider<JsonSchemaContribution>;
 
     private readonly schemas: JsonSchemaConfiguration[] = [];
 
-    protected readonly onSchemasChangedEmitter = new Emitter<void>();
-    readonly onSchemasChanged = this.onSchemasChangedEmitter.event;
-
-    protected readonly onDidChangeSchemaEmitter = new Emitter<URI>();
-    readonly onDidChangeSchema = this.onDidChangeSchemaEmitter.event;
-
-    protected notifyChanged = debounce(() => {
-        this.onSchemasChangedEmitter.fire(undefined);
-    }, 500);
-
-    registerSchema(config: JsonSchemaConfiguration): Disposable {
-        const toDispose = new DisposableCollection();
-        const uri = new URI(config.url);
-        if (uri.scheme === 'vscode') {
-            const resource = this.inMemoryResources.resolve(new URI(config.url));
-            if (resource && resource.onDidChangeContents) {
-                toDispose.push(resource.onDidChangeContents(() => {
-                    this.onDidChangeSchemaEmitter.fire(uri);
-                    this.notifyChanged();
-                }));
-            }
+    onStart(): void {
+        for (const contribution of this.contributions.getContributions()) {
+            contribution.registerSchemas(this);
         }
+    }
+
+    /**
+     * Clients should implement `JsonSchemaContribution` to call these method,
+     * otherwise schemas won't be applied.
+     */
+    registerSchema(config: JsonSchemaConfiguration): void {
         this.schemas.push(config);
-        toDispose.push(Disposable.create(() => {
-            const idx = this.schemas.indexOf(config);
-            if (idx > -1) {
-                this.schemas.splice(idx, 1);
-                this.onDidChangeSchemaEmitter.fire(uri);
-                this.notifyChanged();
-            }
-        }));
-        this.onDidChangeSchemaEmitter.fire(uri);
-        this.notifyChanged();
-        return toDispose;
     }
 
     getJsonSchemaConfigurations(): JsonSchemaConfiguration[] {

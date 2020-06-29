@@ -61,7 +61,7 @@ import { WebSocketConnectionProvider } from './messaging';
 import { AboutDialog, AboutDialogProps } from './about-dialog';
 import { EnvVariablesServer, envVariablesPath, EnvVariable } from './../common/env-variables';
 import { FrontendApplicationStateService } from './frontend-application-state';
-import { JsonSchemaStore } from './json-schema-store';
+import { JsonSchemaStore, JsonSchemaContribution } from './json-schema-store';
 import { TabBarToolbarRegistry, TabBarToolbarContribution, TabBarToolbarFactory, TabBarToolbar } from './shell/tab-bar-toolbar';
 import { bindCorePreferences } from './core-preferences';
 import { QuickPickServiceImpl } from './quick-open/quick-pick-service-impl';
@@ -257,7 +257,9 @@ export const frontendApplicationModule = new ContainerModule((bind, unbind, isBo
     bindPreferenceService(bind);
     bind(FrontendApplicationContribution).toService(PreferenceService);
 
+    bindContributionProvider(bind, JsonSchemaContribution);
     bind(JsonSchemaStore).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(JsonSchemaStore);
 
     bind(PingService).toDynamicValue(ctx => {
         // let's reuse a simple and cheap service from this package
