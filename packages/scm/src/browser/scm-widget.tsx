@@ -54,6 +54,7 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
         super();
         this.node.tabIndex = 0;
         this.id = ScmWidget.ID;
+        this.badge = 0;
         this.addClass('theia-scm');
         this.addClass('theia-scm-main-container');
     }
@@ -84,6 +85,13 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
             }
         }));
 
+        this.updateBadgeCount();
+
+        // Update later. Listen to changes.
+        setTimeout(() => {
+            this.updateBadgeCount();
+        }, 5000);
+
     }
 
     get containerLayout(): PanelLayout {
@@ -98,6 +106,22 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
         this.viewMode = preference;
     }
 
+    protected updateBadgeCount(): void {
+        const repository = this.scmService.selectedRepository;
+        let changes: number = 0;
+        if (repository) {
+            // you need group id to find the proper group
+            repository.provider.groups.map(group => {
+                if (group.id === 'index' || group.id === 'workingTree') {
+                    changes += group.resources.length;
+                }
+            });
+
+            this.badge = changes;
+            console.log('changes:' + this.badge);
+        }
+    }
+
     protected readonly toDisposeOnRefresh = new DisposableCollection();
     protected refresh(): void {
         this.toDisposeOnRefresh.dispose();
@@ -106,6 +130,7 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
         this.title.label = repository ? repository.provider.label : 'no repository found';
         this.title.caption = this.title.label;
         this.update();
+        this.updateBadgeCount();
         if (repository) {
             this.toDisposeOnRefresh.push(repository.onDidChange(() => this.update()));
             // render synchronously to avoid cursor jumping

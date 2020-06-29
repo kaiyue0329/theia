@@ -49,6 +49,8 @@ export class BaseWidget extends Widget {
     protected readonly onDidDisposeEmitter = new Emitter<void>();
     readonly onDidDispose = this.onDidDisposeEmitter.event;
 
+    badge: number;
+
     protected readonly toDispose = new DisposableCollection(
         this.onDidDisposeEmitter,
         Disposable.create(() => this.onDidDisposeEmitter.fire()),
