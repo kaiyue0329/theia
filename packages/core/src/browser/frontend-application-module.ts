@@ -92,6 +92,7 @@ import { TreeLabelProvider } from './tree/tree-label-provider';
 import { ProgressBar } from './progress-bar';
 import { ProgressBarFactory, ProgressBarOptions } from './progress-bar-factory';
 import { CommandOpenHandler } from './command-open-handler';
+import { WidgetTabBarDecorator } from './widget-tabbar-decorator';
 
 export { bindResourceProvider, bindMessageService, bindPreferenceService };
 
@@ -322,4 +323,5 @@ export const frontendApplicationModule = new ContainerModule((bind, unbind, isBo
     });
 
     bind(ContextMenuContext).toSelf().inSingletonScope();
+    bind(WidgetTabBarDecorator).toSelf().inSingletonScope();
 });

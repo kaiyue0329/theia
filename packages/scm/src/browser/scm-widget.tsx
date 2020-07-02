@@ -110,7 +110,6 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
         const repository = this.scmService.selectedRepository;
         let changes: number = 0;
         if (repository) {
-            // you need group id to find the proper group
             repository.provider.groups.map(group => {
                 if (group.id === 'index' || group.id === 'workingTree') {
                     changes += group.resources.length;

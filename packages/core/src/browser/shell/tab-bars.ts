@@ -53,7 +53,6 @@ export interface SideBarRenderData extends TabBar.IRenderData<Widget> {
     iconSize?: SizeData;
     paddingTop?: number;
     paddingBottom?: number;
-    badge?: number;
 }
 
 /**
@@ -187,8 +186,10 @@ export class TabBarRenderer extends TabBar.Renderer {
     }
 
     renderBadge(data: SideBarRenderData, isInSidePanel?: boolean): VirtualElement {
-        if (isInSidePanel && data.badge && data.badge > 0) {
-            return h.div({ className: 'p-TabBar-tabBadge' }, `${data.badge}`);
+        const badgeDecorationData = this.getDecorationData(data.title, 'badge');
+
+        if (isInSidePanel && badgeDecorationData.length > 0) {
+            return h.div({ className: 'theia-badge-decorator' }, `${badgeDecorationData}`);
         }
         return h.div({ className: '' });
     }
@@ -820,11 +821,6 @@ export class SideTabBar extends ScrollableTabBar {
                 rd = { title, current, zIndex, ...renderData[i] };
             } else {
                 rd = { title, current, zIndex };
-            }
-            // gather the badge information for the tab (if exist)
-            if (title.label === 'Source Control: Git') {
-                // badge = 123;
-                console.log('badge (tab-bars.ts): ' + rd.badge);
             }
             content[i] = renderer.renderTab(rd, true);
         }

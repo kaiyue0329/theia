@@ -182,7 +182,7 @@ body.theia-editor-highlightModifiedTabs
     background-repeat: no-repeat;
 }
 
-.p-TabBar .p-TabBar-tabBadge {
+.p-TabBar .theia-badge-decorator {
     color: rgb(255, 255, 255);
     background-color: rgb(0, 122, 204);
     position: absolute;
