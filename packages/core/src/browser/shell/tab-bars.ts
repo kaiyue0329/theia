@@ -25,9 +25,10 @@ import { ArrayExt } from '@phosphor/algorithm';
 import { ElementExt } from '@phosphor/domutils';
 import { TabBarToolbarRegistry, TabBarToolbar } from './tab-bar-toolbar';
 import { TheiaDockPanel, MAIN_AREA_ID, BOTTOM_AREA_ID } from './theia-dock-panel';
-import { WidgetDecoration } from '../widget-decoration';
+import { WidgetDecoration, WidgetTabDecoration } from '../widget-decoration';
 import { TabBarDecoratorService } from './tab-bar-decorator';
 import { IconThemeService } from '../icon-theme-service';
+import { WidgetTabBarDecoratorService } from './widget-tab-bar-decorator-service';
 
 /** The class name added to hidden content nodes, which are required to render vertical side bars. */
 const HIDDEN_CONTENT_CLASS = 'theia-TabBar-hidden-content';
@@ -77,7 +78,8 @@ export class TabBarRenderer extends TabBar.Renderer {
     constructor(
         protected readonly contextMenuRenderer?: ContextMenuRenderer,
         protected readonly decoratorService?: TabBarDecoratorService,
-        protected readonly iconThemeService?: IconThemeService
+        protected readonly iconThemeService?: IconThemeService,
+        protected readonly widgetDecoratorService?: WidgetTabBarDecoratorService,
     ) {
         super();
         if (this.decoratorService) {
@@ -151,7 +153,8 @@ export class TabBarRenderer extends TabBar.Renderer {
             h.div(
                 { className: 'theia-tab-icon-label' },
                 this.renderIcon(data, isInSidePanel),
-                this.renderLabel(data, isInSidePanel)
+                this.renderLabel(data, isInSidePanel),
+                this.renderBadge(data, isInSidePanel)
             ),
             this.renderCloseIcon(data)
         );
@@ -226,7 +229,19 @@ export class TabBarRenderer extends TabBar.Renderer {
         return h.div({ className: 'p-TabBar-tabLabel', style }, data.title.label);
     }
 
-    protected readonly decorations = new Map<Title<Widget>, WidgetDecoration.Data[]>();
+    renderBadge(data: SideBarRenderData, isInSidePanel?: boolean): VirtualElement {
+        const badge = this.getDecorationData(data.title, 'badge');
+        if (badge && badge.length > 0) {
+            if (isInSidePanel) {
+                return h.div({ className: 'theia-badge-decorator-sidebar' }, `${badge}`);
+            } else {
+                return h.div({ className: 'theia-badge-decorator-horizontal' }, `${badge}`);
+            }
+        }
+        return h.div({});
+    }
+
+    protected readonly decorations = new Map<Title<Widget>, WidgetTabDecoration.Data[]>();
 
     protected resetDecorations(title?: Title<Widget>): void {
         if (title) {
@@ -243,7 +258,7 @@ export class TabBarRenderer extends TabBar.Renderer {
      * Get all available decorations of a given tab.
      * @param {string} title The widget title.
      */
-    protected getDecorations(title: Title<Widget>): WidgetDecoration.Data[] {
+    protected getDecorations(title: Title<Widget>): WidgetTabDecoration.Data[] {
         if (this.tabBar && this.decoratorService) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const owner: { resetTabBarDecorations?: () => void; } & Widget = title.owner;
@@ -253,7 +268,9 @@ export class TabBarRenderer extends TabBar.Renderer {
             }
 
             const decorations = this.decorations.get(title) || this.decoratorService.getDecorations(title);
-            this.decorations.set(title, decorations);
+            if (this.widgetDecoratorService) {
+                decorations.push(...this.widgetDecoratorService.getDecorations(title));
+            }
             return decorations;
         }
         return [];
@@ -264,7 +281,7 @@ export class TabBarRenderer extends TabBar.Renderer {
      * @param {string} title The title.
      * @param {K} key The type of the decoration data.
      */
-    protected getDecorationData<K extends keyof WidgetDecoration.Data>(title: Title<Widget>, key: K): WidgetDecoration.Data[K][] {
+    protected getDecorationData<K extends keyof WidgetTabDecoration.Data>(title: Title<Widget>, key: K): WidgetTabDecoration.Data[K][] {
         return this.getDecorations(title).filter(data => data[key] !== undefined).map(data => data[key]);
 
     }
