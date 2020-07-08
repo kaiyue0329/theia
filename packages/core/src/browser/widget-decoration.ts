@@ -338,3 +338,9 @@ export namespace WidgetDecoration {
         export const comparePriority = (left: Data, right: Data): number => (left.priority || 0) - (right.priority || 0);
     }
 }
+
+export namespace WidgetTabDecoration {
+    export interface Data extends WidgetDecoration.Data {
+        badge?: string,
+    }
+}
