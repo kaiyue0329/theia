@@ -45,6 +45,8 @@ import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
 
 const ROOT_ID = 'ResultTree';
 
+const TREE_NODE_INDENT_WIDTH_SIW_CLASS = 'theia-treeNodeIndentWidth-siw';
+
 export interface SearchInWorkspaceRoot extends CompositeTreeNode {
     children: SearchInWorkspaceRootFolderNode[];
 }
@@ -665,6 +667,10 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
             <span className={className}>{match}</span>
             {replaceTerm}
         </React.Fragment>;
+    }
+
+    protected renderIndent(node: TreeNode, depth: number): React.ReactNode {
+        return super.renderIndent(node, depth, TREE_NODE_INDENT_WIDTH_SIW_CLASS);
     }
 
     /**

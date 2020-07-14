@@ -21,6 +21,8 @@ import { TreeWidget, TreeNode, createTreeContainer, TreeProps, TreeImpl, Tree, T
 import { TreeSource, TreeElement } from './tree-source';
 import { SourceTree, TreeElementNode, TreeSourceNode } from './source-tree';
 
+const TREE_NODE_INDENT_WIDTH_SOURCE_CLASS = 'theia-treeNodeIndentWidth-source';
+
 @injectable()
 export class SourceTreeWidget extends TreeWidget {
 
@@ -79,6 +81,10 @@ export class SourceTreeWidget extends TreeWidget {
         }
         return super.renderTree(model);
 
+    }
+
+    protected renderIndent(node: TreeNode, depth: number): React.ReactNode {
+        return super.renderIndent(node, depth, TREE_NODE_INDENT_WIDTH_SOURCE_CLASS);
     }
 
     protected renderCaption(node: TreeNode): React.ReactNode {
