@@ -45,6 +45,8 @@ import { ColorRegistry } from '@theia/core/lib/browser/color-registry';
 
 const ROOT_ID = 'ResultTree';
 
+const TREE_NODE_INDENT_WIDTH_SIW_CLASS = 'theia-tree-node-indent-width-siw';
+
 export interface SearchInWorkspaceRoot extends CompositeTreeNode {
     children: SearchInWorkspaceRootFolderNode[];
 }
@@ -665,6 +667,21 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
             <span className={className}>{match}</span>
             {replaceTerm}
         </React.Fragment>;
+    }
+
+    protected renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
+        const indentDivs: React.ReactNode[] = [];
+        let nodePtr = node;
+        for (let i = 0; i < props.depth; i++) {
+            if (nodePtr !== undefined && nodePtr.parent !== undefined) {
+                nodePtr = nodePtr.parent;
+            }
+            const needsNodeActiveGuideline = this.parentOfActiveNode.has(nodePtr.id);
+            const needsLeafPadding = (!this.isExpandable(node) && i === 0);
+            indentDivs.unshift(<div key={i} className={`${TREE_NODE_INDENT_WIDTH_SIW_CLASS} 
+                ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
+        }
+        return indentDivs;
     }
 
     /**

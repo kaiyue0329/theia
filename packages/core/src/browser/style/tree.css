@@ -139,3 +139,41 @@
 .theia-tree-element-node {
     width: 100%
 }
+
+.theia-tree-node-indent {
+    display: flex;
+}
+
+.theia-tree-node-indent-block {
+    width: calc(var(--theia-ui-padding)/6*10);
+    height: var(--theia-content-line-height);
+    border-right: var(--theia-border-width) solid transparent;
+}
+
+.theia-tree-node-indent-width-siw {
+    width: calc(var(--theia-ui-padding)/6*5);
+}
+
+.theia-tree-node-indent-width-source {
+    width: calc(var(--theia-ui-padding)/6*8);
+}
+
+.theia-tree-node-child-padding {
+    margin-right: calc(var(--theia-ui-padding)/6*5);
+}
+
+.theia-TreeContainer:hover .theia-tree-node-indent-block.theia-indent-guide-on-hover {
+    border-right: var(--theia-border-width) solid var(--theia-tree-indentGuidesStrokeHover);
+}
+
+.theia-TreeContainer .theia-tree-node-indent-block.theia-tree-node-active.theia-indent-guide-on-hover {
+    border-right: var(--theia-border-width) solid var(--theia-tree-indentGuidesStroke);
+}
+
+.theia-TreeContainer .theia-tree-node-indent-block.theia-indent-guide-always {
+    border-right: var(--theia-border-width) solid var(--theia-tree-indentGuidesStrokeHover);
+}
+
+.theia-TreeContainer .theia-tree-node-indent-block.theia-tree-node-active.theia-indent-guide-always {
+    border-right: var(--theia-border-width) solid var(--theia-tree-indentGuidesStroke);
+}
