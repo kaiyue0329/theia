@@ -25,7 +25,8 @@ import {
     StatusBarEntry,
     KeybindingRegistry,
     ViewContainerTitleOptions,
-    ViewContainer} from '@theia/core/lib/browser';
+    ViewContainer
+} from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry, TabBarToolbarItem } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { CommandRegistry, Command, Disposable, DisposableCollection, CommandService } from '@theia/core/lib/common';
 import { ContextKeyService, ContextKey } from '@theia/core/lib/browser/context-key-service';
@@ -36,6 +37,7 @@ import { ScmQuickOpenService } from './scm-quick-open-service';
 import { ScmRepository } from './scm-repository';
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { ColorRegistry, Color } from '@theia/core/lib/browser/color-registry';
+import { Widget } from '@theia/core/lib/browser/widgets';
 
 export const SCM_WIDGET_FACTORY_ID = ScmWidget.ID;
 export const SCM_VIEW_CONTAINER_ID = 'scm-view-container';
@@ -65,6 +67,12 @@ export namespace SCM_COMMANDS {
         tooltip: 'Toggle to List View',
         iconClass: 'codicon codicon-list-flat',
         label: 'Toggle to List View',
+    };
+    export const COLLAPSE_ALL: Command = {
+        id: 'scm.collapse-all',
+        category: 'SCM',
+        label: 'Collapse All',
+        iconClass: 'theia-collapse-all-icon'
     };
 }
 
@@ -139,8 +147,30 @@ export class ScmContribution extends AbstractViewContribution<ScmWidget> impleme
         });
     }
 
+    protected withWidget<T>(widget: Widget | undefined = this.tryGetWidget(), fn: (widget: ScmWidget) => T): T | false {
+        if (widget instanceof ScmWidget && widget.id === ScmWidget.ID) {
+            return fn(widget);
+        }
+        return false;
+    }
+
+    protected collectChangesCount(): number {
+        const repository = this.scmService.selectedRepository;
+        let changes = 0;
+        if (!repository) {
+            return 0;
+        }
+        repository.provider.groups.map(group => {
+            if (group.id === 'index' || group.id === 'workingTree') {
+                changes += group.resources.length;
+            }
+        });
+        return changes;
+    }
+
     registerToolbarItems(registry: TabBarToolbarRegistry): void {
         const viewModeEmitter = new Emitter<void>();
+        const collapseAllEmitter = new Emitter<void>();
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const extractScmWidget = (widget: any) => {
             if (widget instanceof ViewContainer) {
@@ -180,6 +210,31 @@ export class ScmContribution extends AbstractViewContribution<ScmWidget> impleme
         };
         registerToggleViewItem(SCM_COMMANDS.TREE_VIEW_MODE, 'tree');
         registerToggleViewItem(SCM_COMMANDS.LIST_VIEW_MODE, 'list');
+
+        const registerCollapseAllItem = (command: Command) => {
+            const id = command.id;
+            const item: TabBarToolbarItem = {
+                id,
+                command: id,
+                tooltip: command.label,
+                priority: 4,
+                onDidChange: collapseAllEmitter.event
+            };
+            this.commandRegistry.registerCommand({ id, iconClass: command && command.iconClass }, {
+                execute: w => this.withWidget(w, widget => widget.collapseAll()),
+                isEnabled: w => this.withWidget(w, widget => widget.viewMode === 'tree' && this.collectChangesCount() > 0),
+                isVisible: widget => {
+                    const scmWidget = extractScmWidget(widget);
+                    if (scmWidget) {
+                        return !!this.scmService.selectedRepository
+                            && scmWidget.viewMode !== 'list';
+                    }
+                    return false;
+                },
+            });
+            registry.registerItem(item);
+        }
+        registerCollapseAllItem(SCM_COMMANDS.COLLAPSE_ALL);
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {

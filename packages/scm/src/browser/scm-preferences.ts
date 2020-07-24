@@ -35,12 +35,19 @@ export const scmPreferenceSchema: PreferenceSchema = {
             ],
             description: 'Controls the default source control view mode.',
             default: 'list'
+        },
+        'scm.collapseChanges': {
+            type: 'string',
+            enum: ['auto', 'alwaysCollapse', 'alwaysExpand'],
+            description: 'Controls whether the repository changes will be collapsed or expanded.',
+            default: 'auto',
         }
     }
 };
 
 export interface ScmConfiguration {
-    'scm.defaultViewMode': 'tree' | 'list'
+    'scm.defaultViewMode': 'tree' | 'list';
+    'scm.collapseChanges': string;
 }
 
 export const ScmPreferences = Symbol('ScmPreferences');

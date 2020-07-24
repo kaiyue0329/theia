@@ -36,6 +36,7 @@ import { EditorManager, DiffNavigatorProvider } from '@theia/editor/lib/browser'
 import { FileStat } from '@theia/filesystem/lib/common';
 import { IconThemeService } from '@theia/core/lib/browser/icon-theme-service';
 import { ScmFileChangeGroupNode, ScmFileChangeFolderNode, ScmFileChangeNode } from './scm-tree-model';
+import {ScmPreferences} from './scm-preferences';
 
 @injectable()
 export class ScmTreeWidget extends TreeWidget {
@@ -58,6 +59,7 @@ export class ScmTreeWidget extends TreeWidget {
     @inject(EditorManager) protected readonly editorManager: EditorManager;
     @inject(DiffNavigatorProvider) protected readonly diffNavigatorProvider: DiffNavigatorProvider;
     @inject(IconThemeService) protected readonly iconThemeService: IconThemeService;
+    @inject(ScmPreferences) protected readonly scmPreferences: ScmPreferences;
 
     constructor(
         @inject(TreeProps) readonly props: TreeProps,
@@ -96,6 +98,16 @@ export class ScmTreeWidget extends TreeWidget {
         }
     }
 
+    collapseAll(): void {
+        this.model.collapseAll();
+        // this.resultTree.forEach(rootFolderNode => {
+        //     rootFolderNode.children.forEach(fileNode => this.expansionService.collapseNode(fileNode));
+        //     if (rootFolderNode.visible) {
+        //         this.expansionService.collapseNode(rootFolderNode);
+        //     }
+        // });
+    }
+
     /**
      * Render the node given the tree node and node properties.
      * @param node the tree node.
@@ -112,6 +124,7 @@ export class ScmTreeWidget extends TreeWidget {
         }
 
         const attributes = this.createNodeAttributes(node, props);
+        // const collapseValue: string = this.scmPreferences['scm.collapseChanges'];
 
         if (ScmFileChangeGroupNode.is(node)) {
             const content = <ScmResourceGroupElement
@@ -190,6 +203,20 @@ export class ScmTreeWidget extends TreeWidget {
             };
         }
         return super.createContainerAttributes();
+    }
+
+    /**
+     * Collapse the search-in-workspace file node
+     * based on the preference value.
+     */
+    protected collapseFolderNode(node: ScmFileChangeFolderNode, preferenceValue: string): void {
+        if (preferenceValue === 'auto' && node.children.length >= 10) {
+            node.expanded = false;
+        } else if (preferenceValue === 'alwaysCollapse') {
+            node.expanded = false;
+        } else if (preferenceValue === 'alwaysExpand') {
+            node.expanded = true;
+        }
     }
 
     /**
