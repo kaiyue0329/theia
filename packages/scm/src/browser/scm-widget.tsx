@@ -27,7 +27,7 @@ import { ScmAmendWidget } from './scm-amend-widget';
 import { ScmNoRepositoryWidget } from './scm-no-repository-widget';
 import { ScmService } from './scm-service';
 import { ScmTreeWidget } from './scm-tree-widget';
-import { ScmPreferences, ScmConfiguration } from './scm-preferences';
+import { ScmPreferences, ScmConfiguration, ScmPreferenceTypes } from './scm-preferences';
 
 @injectable()
 export class ScmWidget extends BaseWidget implements StatefulWidget {
@@ -80,14 +80,19 @@ export class ScmWidget extends BaseWidget implements StatefulWidget {
         this.updateViewMode(this.scmPreferences.get('scm.defaultViewMode'));
         this.toDispose.push(this.scmPreferences.onPreferenceChanged((e: PreferenceChangeEvent<ScmConfiguration>) => {
             if (e.preferenceName === 'scm.defaultViewMode') {
-                this.updateViewMode(e.newValue!);
+                const defaultViewMode = this.scmPreferences[e.preferenceName] as ScmPreferenceTypes.DEFAULT_VIEW_MODE;
+                this.updateViewMode(defaultViewMode);
             }
         }));
-
     }
 
     get containerLayout(): PanelLayout {
         return this.panel.layout as PanelLayout;
+    }
+
+    collapseAll(): void {
+        this.resourceWidget.collapseAll();
+        this.update();
     }
 
     /**

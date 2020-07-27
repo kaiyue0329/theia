@@ -22,7 +22,10 @@ import URI from '@theia/core/lib/common/uri';
 import { isOSX } from '@theia/core/lib/common/os';
 import { DisposableCollection, Disposable } from '@theia/core/lib/common/disposable';
 import { Message } from '@phosphor/messaging';
-import { TreeWidget, TreeNode, SelectableTreeNode, TreeProps, NodeProps, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from '@theia/core/lib/browser/tree';
+import {
+    TreeWidget, TreeNode, SelectableTreeNode, TreeProps, NodeProps, TREE_NODE_SEGMENT_CLASS,
+    TREE_NODE_SEGMENT_GROW_CLASS, CompositeTreeNode
+} from '@theia/core/lib/browser/tree';
 import { ScmTreeModel } from './scm-tree-model';
 import { MenuModelRegistry, ActionMenuNode, CompositeMenuNode, MenuPath } from '@theia/core/lib/common/menu';
 import { ScmResourceGroup, ScmResource, ScmResourceDecorations } from './scm-provider';
@@ -84,6 +87,21 @@ export class ScmTreeWidget extends TreeWidget {
     }
     get viewMode(): 'tree' | 'list' {
         return this.model.viewMode;
+    }
+
+    collapseAll(): void {
+        const root = this.model.root;
+        if (CompositeTreeNode.is(root)) {
+            root.children.map(group => {
+                if (CompositeTreeNode.is(group)) {
+                    group.children.map(folderNode => {
+                        if (CompositeTreeNode.is(folderNode)) {
+                            this.model.collapseAll(folderNode);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     protected refreshOnRepositoryChange(): void {
