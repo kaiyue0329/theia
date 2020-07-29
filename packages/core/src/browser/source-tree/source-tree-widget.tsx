@@ -18,7 +18,7 @@ import * as React from 'react';
 import { injectable, postConstruct, interfaces, Container } from 'inversify';
 import { DisposableCollection } from '../../common/disposable';
 import {
-    TreeWidget, TreeNode, createTreeContainer, TreeProps, TreeImpl, Tree, TreeModel, NodeProps
+    TreeWidget, TreeNode, createTreeContainer, TreeProps, TreeImpl, Tree, TreeModel
 } from '../tree';
 import { TreeSource, TreeElement } from './tree-source';
 import { SourceTree, TreeElementNode, TreeSourceNode } from './source-tree';
@@ -29,7 +29,12 @@ const TREE_NODE_INDENT_WIDTH_SOURCE_CLASS = 'theia-tree-node-indent-width-source
 export class SourceTreeWidget extends TreeWidget {
 
     static createContainer(parent: interfaces.Container, props?: Partial<TreeProps>): Container {
-        const child = createTreeContainer(parent, props);
+        const sourceTreeProps = {
+            ...props,
+            nodeIndentWidthClassname: TREE_NODE_INDENT_WIDTH_SOURCE_CLASS
+        };
+
+        const child = createTreeContainer(parent, sourceTreeProps);
 
         child.unbind(TreeImpl);
         child.bind(SourceTree).toSelf();
@@ -83,21 +88,6 @@ export class SourceTreeWidget extends TreeWidget {
         }
         return super.renderTree(model);
 
-    }
-
-    protected renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
-        const indentDivs: React.ReactNode[] = [];
-        let nodePtr = node;
-        for (let i = 0; i < props.depth; i++) {
-            if (nodePtr !== undefined && nodePtr.parent !== undefined) {
-                nodePtr = nodePtr.parent;
-            }
-            const needsNodeActiveGuideline = this.parentOfActiveNode.has(nodePtr.id);
-            const needsLeafPadding = (!this.isExpandable(node) && i === 0);
-            indentDivs.unshift(<div key={i} className={`${TREE_NODE_INDENT_WIDTH_SOURCE_CLASS} 
-                ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
-        }
-        return indentDivs;
     }
 
     protected renderCaption(node: TreeNode): React.ReactNode {

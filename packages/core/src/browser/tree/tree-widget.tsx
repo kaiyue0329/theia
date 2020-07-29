@@ -83,6 +83,11 @@ export interface TreeProps {
     readonly rootLevelIconPadding: number;
 
     /**
+     * Custom css classname for subclass
+     */
+    readonly nodeIndentWidthClassname?: string | [string, string];
+
+    /**
      * `true` if the tree widget support multi-selection. Otherwise, `false`. Defaults to `false`.
      */
     readonly multiSelect?: boolean;
@@ -191,8 +196,6 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
         this.node.tabIndex = 0;
     }
 
-    protected parentOfActiveNode = new Set<String>();
-
     @postConstruct()
     protected init(): void {
         if (this.props.search) {
@@ -232,23 +235,10 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
         this.toDispose.pushAll([
             this.model,
             this.model.onChanged(() => this.updateRows()),
-            this.model.onSelectionChanged(selectedNodes => {
-                this.updateScrollToRow({ resize: false });
-                this.parentOfActiveNode.clear();
-                for (const node of selectedNodes) {
-                    this.addActiveNodeParent(node);
-                }
-            }
-
-            ),
+            this.model.onSelectionChanged(() => this.updateScrollToRow({ resize: false })),
             this.model.onDidChangeBusy(() => this.update()),
             this.model.onNodeRefreshed(() => this.updateDecorations()),
-            this.model.onExpansionChanged(node => {
-                this.updateDecorations();
-                this.parentOfActiveNode.clear();
-                this.addActiveNodeParent(node);
-            }),
-
+            this.model.onExpansionChanged(() => this.updateDecorations()),
             this.decoratorService,
             this.decoratorService.onDidChangeDecorations(() => this.updateDecorations()),
             this.labelProvider.onDidChange(e => {
@@ -810,23 +800,6 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
     }
 
     /**
-     * Add the parent id of the nodes that need tree indent guideline into a set
-     * @param node the tree node.
-     */
-    protected addActiveNodeParent(node: TreeNode): void {
-        if (this.isExpandable(node)) {
-            if (node.children && node.children.length > 0) {
-                this.parentOfActiveNode.add(node.id);
-            }
-        } else {
-            const parent = node.parent;
-            if (parent) {
-                this.parentOfActiveNode.add(parent.id);
-            }
-        }
-    }
-
-    /**
      * Returns the classname of the indent div based on the inputs
      * @param needsNodeActiveGuideline "true" if active guideline is needed for either all siblings of a selected node or all child nodes of a selected parent node.
      * @param needsLeafPadding "true" if we have reached the last indent of a child node.
@@ -853,9 +826,24 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
                 nodePtr = nodePtr.parent;
             }
 
-            const needsNodeActiveGuideline = this.parentOfActiveNode.has(nodePtr.id);
+            let needsNodeActiveGuideline = false;
+            if (SelectableTreeNode.isSelected(nodePtr) && this.isExpandable(nodePtr)) {
+                needsNodeActiveGuideline = true;
+            } else if (this.isExpandable(nodePtr) && nodePtr.expanded) {
+                for (const child of nodePtr.children) {
+                    if (!this.isExpandable(child) && SelectableTreeNode.isSelected(child)) {
+                        needsNodeActiveGuideline = true;
+                    } else if (SelectableTreeNode.isSelected(child) && this.isExpandable(child) && !child.expanded) {
+                        needsNodeActiveGuideline = true;
+                    }
+                }
+            }
+
             const needsLeafPadding = (!this.isExpandable(node) && i === 0);
-            indentDivs.unshift(<div key={i} className={`${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
+            const isWidthClassnameForScm = this.props.nodeIndentWidthClassname && (this.props.nodeIndentWidthClassname.length > 1);
+            indentDivs.unshift(<div key={i} className={`${this.props.nodeIndentWidthClassname && !isWidthClassnameForScm ? this.props.nodeIndentWidthClassname : ''} 
+            ${isWidthClassnameForScm ? i === (props.depth - 1) ? this.props.nodeIndentWidthClassname![0] : this.props.nodeIndentWidthClassname![1] : ''}
+                ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
         }
         return indentDivs;
     }
