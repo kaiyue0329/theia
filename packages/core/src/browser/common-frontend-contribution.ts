@@ -1087,7 +1087,6 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
             { id: 'list.hoverBackground', defaults: { dark: '#2A2D2E', light: '#F0F0F0' }, description: 'List/Tree background when hovering over items using the mouse.' },
             { id: 'list.hoverForeground', description: 'List/Tree foreground when hovering over items using the mouse.' },
             { id: 'list.filterMatchBackground', defaults: { dark: 'editor.findMatchHighlightBackground', light: 'editor.findMatchHighlightBackground' }, description: 'Background color of the filtered match.' },
-            { id: 'tree.indentGuidesStroke', defaults: { dark: '#585858', light: '#a9a9a9', hc: '#a9a9a9' }, description: "Tree Widget's stroke color for active indent guides." },
             { id: 'tree.indentGuidesStrokeHover', defaults: { dark: Color.rgba(88, 88, 88, 0.4), light: Color.rgba(169, 169, 169, 0.4), hc: Color.rgba(169, 169, 169, 0.4) }, description: 'Tree Widget\'s stroke color for hovered indent guides.' },
 
             // Editor Group & Tabs colors should be aligned with https://code.visualstudio.com/api/references/theme-color#editor-groups-tabs

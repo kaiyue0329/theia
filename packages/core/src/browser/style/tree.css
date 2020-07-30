@@ -158,8 +158,12 @@
     width: calc(var(--theia-ui-padding)/6*8);
 }
 
-.theia-tree-node-child-padding {
+.theia-tree-node-child-right-margin {
     margin-right: calc(var(--theia-ui-padding)/6*5);
+}
+
+.theia-tree-node-child-left-margin {
+    margin-left: -18px;
 }
 
 .theia-TreeContainer:hover .theia-tree-node-indent-block.theia-indent-guide-on-hover {

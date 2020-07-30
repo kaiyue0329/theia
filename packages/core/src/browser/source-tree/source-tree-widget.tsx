@@ -18,22 +18,21 @@ import * as React from 'react';
 import { injectable, postConstruct, interfaces, Container } from 'inversify';
 import { DisposableCollection } from '../../common/disposable';
 import {
-    TreeWidget, TreeNode, createTreeContainer, TreeProps, TreeImpl, Tree, TreeModel
+    TreeWidget, TreeNode, createTreeContainer, TreeProps, TreeImpl, Tree, TreeModel, defaultTreeProps
 } from '../tree';
 import { TreeSource, TreeElement } from './tree-source';
 import { SourceTree, TreeElementNode, TreeSourceNode } from './source-tree';
 
 const TREE_NODE_INDENT_WIDTH_SOURCE_CLASS = 'theia-tree-node-indent-width-source';
+const sourceTreeProps: TreeProps = {
+    ...defaultTreeProps,
+    nodeIndentWidthClassname: TREE_NODE_INDENT_WIDTH_SOURCE_CLASS
+};
 
 @injectable()
 export class SourceTreeWidget extends TreeWidget {
 
     static createContainer(parent: interfaces.Container, props?: Partial<TreeProps>): Container {
-        const sourceTreeProps = {
-            ...props,
-            nodeIndentWidthClassname: TREE_NODE_INDENT_WIDTH_SOURCE_CLASS
-        };
-
         const child = createTreeContainer(parent, sourceTreeProps);
 
         child.unbind(TreeImpl);

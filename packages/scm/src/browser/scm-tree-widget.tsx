@@ -24,7 +24,7 @@ import { DisposableCollection, Disposable } from '@theia/core/lib/common/disposa
 import { Message } from '@phosphor/messaging';
 import {
     TreeWidget, TreeNode, SelectableTreeNode, TreeProps, NodeProps, TREE_NODE_SEGMENT_CLASS,
-    TREE_NODE_SEGMENT_GROW_CLASS, TREE_NODE_INDENT_CLASS
+    TREE_NODE_SEGMENT_GROW_CLASS, TREE_NODE_INDENT_CLASS, defaultTreeProps
 } from '@theia/core/lib/browser/tree';
 import { ScmTreeModel } from './scm-tree-model';
 import { MenuModelRegistry, ActionMenuNode, CompositeMenuNode, MenuPath } from '@theia/core/lib/common/menu';
@@ -41,8 +41,13 @@ import { IconThemeService } from '@theia/core/lib/browser/icon-theme-service';
 import { ScmFileChangeGroupNode, ScmFileChangeFolderNode, ScmFileChangeNode } from './scm-tree-model';
 
 const scmHeaderLeftPadding = 0;
-// const TREE_NODE_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-indent-padding-scm';
-// const TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-first-indent-padding-scm';
+const TREE_NODE_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-indent-padding-scm';
+const TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-first-indent-padding-scm';
+const scmTreeProps: TreeProps = {
+    ...defaultTreeProps,
+    expansionTogglePadding: 0,
+    nodeIndentWidthClassname: [TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS, TREE_NODE_INDENT_PADDING_SCM_CLASS]
+};
 
 @injectable()
 export class ScmTreeWidget extends TreeWidget {
@@ -72,7 +77,7 @@ export class ScmTreeWidget extends TreeWidget {
         @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer,
         @inject(ScmService) protected readonly scmService: ScmService,
     ) {
-        super(props, model, contextMenuRenderer);
+        super(scmTreeProps, model, contextMenuRenderer);
         this.id = ScmTreeWidget.ID;
         this.addClass('groups-outer-container');
     }
@@ -189,22 +194,6 @@ export class ScmTreeWidget extends TreeWidget {
         }
         return super.renderNode(node, props);
     }
-
-    // protected renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
-    //     const indentDivs: React.ReactNode[] = [];
-    //     let nodePtr = node;
-    //     for (let i = 0; i < props.depth; i++) {
-    //         if (nodePtr !== undefined && nodePtr.parent !== undefined) {
-    //             nodePtr = nodePtr.parent;
-    //         }
-    //         const needsNodeActiveGuideline = this.parentOfActiveNode.has(nodePtr.id);
-    //         const needsLeafPadding = (!this.isExpandable(node) && i === 0);
-    //         indentDivs.unshift(<div key={i} className={`
-    //                 ${i === (props.depth - 1) ? TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS : TREE_NODE_INDENT_PADDING_SCM_CLASS}
-    //                 ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
-    //     }
-    //     return indentDivs;
-    // }
 
     protected createContainerAttributes(): React.HTMLAttributes<HTMLElement> {
         const repository = this.scmService.selectedRepository;

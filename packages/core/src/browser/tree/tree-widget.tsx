@@ -55,7 +55,8 @@ export const COMPOSITE_TREE_NODE_CLASS = 'theia-CompositeTreeNode';
 export const TREE_NODE_CAPTION_CLASS = 'theia-TreeNodeCaption';
 export const TREE_NODE_INDENT_CLASS = 'theia-tree-node-indent';
 export const TREE_NODE_INDENT_BLOCK_CLASS = 'theia-tree-node-indent-block';
-export const TREE_NODE_CHILD_PADDING_CLASS = 'theia-tree-node-child-padding';
+export const TREE_NODE_CHILD_RIGHT_MARGIN_CLASS = 'theia-tree-node-child-right-margin';
+export const TREE_NODE_CHILD_LEFT_MARGIN_CLASS = 'theia-tree-node-child-left-margin';
 export const TREE_NODE_ACTIVE = 'theia-tree-node-active';
 export const INDENT_GUIDE_ALWAYS = 'theia-indent-guide-always';
 export const INDENT_GUIDE_ONHOVER = 'theia-indent-guide-on-hover';
@@ -130,7 +131,7 @@ export interface NodeProps {
  */
 export const defaultTreeProps: TreeProps = {
     leftPadding: 8,
-    expansionTogglePadding: 0,
+    expansionTogglePadding: 18,
     rootLevelIconPadding: 3
 };
 
@@ -802,13 +803,15 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
     /**
      * Returns the classname of the indent div based on the inputs
      * @param needsNodeActiveGuideline "true" if active guideline is needed for either all siblings of a selected node or all child nodes of a selected parent node.
-     * @param needsLeafPadding "true" if we have reached the last indent of a child node.
+     * @param needsLeafPadding "true" if we reach the right-most indent of a non-composite node.
+     * @param removeAdditionalPadding "true" if we reach the left-most indent of a non-composite node
      */
-    protected renderIndentClass(needsNodeActiveGuideline: boolean, needsLeafPadding: boolean): string {
+    protected renderIndentClass(needsNodeActiveGuideline: boolean, needsLeafPadding: boolean, removeAdditionalPadding: boolean): string {
         const indentGuideOption = this.corePreferences['workbench.tree.renderIndentGuides'];
         const indentClassName = `${TREE_NODE_INDENT_BLOCK_CLASS}
         ${indentGuideOption !== 'none' ? indentGuideOption === 'onHover' ? INDENT_GUIDE_ONHOVER : INDENT_GUIDE_ALWAYS : ''}  
-        ${needsLeafPadding ? TREE_NODE_CHILD_PADDING_CLASS : ''}
+        ${needsLeafPadding ? TREE_NODE_CHILD_RIGHT_MARGIN_CLASS : ''}
+        ${removeAdditionalPadding ? TREE_NODE_CHILD_LEFT_MARGIN_CLASS : ''}
         ${indentGuideOption !== 'none' && needsNodeActiveGuideline ? TREE_NODE_ACTIVE : ''}`;
         return indentClassName;
     }
@@ -840,10 +843,11 @@ export class TreeWidget extends ReactWidget implements StatefulWidget {
             }
 
             const needsLeafPadding = (!this.isExpandable(node) && i === 0);
-            const isWidthClassnameForScm = this.props.nodeIndentWidthClassname && (this.props.nodeIndentWidthClassname.length > 1);
+            const isWidthClassnameForScm = this.props.nodeIndentWidthClassname && (typeof this.props.nodeIndentWidthClassname !== 'string');
+            const removeAdditionalPadding = !isWidthClassnameForScm && (!this.isExpandable(node) && i === (props.depth - 1));
             indentDivs.unshift(<div key={i} className={`${this.props.nodeIndentWidthClassname && !isWidthClassnameForScm ? this.props.nodeIndentWidthClassname : ''} 
             ${isWidthClassnameForScm ? i === (props.depth - 1) ? this.props.nodeIndentWidthClassname![0] : this.props.nodeIndentWidthClassname![1] : ''}
-                ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding)}`}> </div>);
+                ${this.renderIndentClass(needsNodeActiveGuideline, needsLeafPadding, removeAdditionalPadding)}`}> </div>);
         }
         return indentDivs;
     }
