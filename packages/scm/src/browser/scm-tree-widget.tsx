@@ -24,7 +24,7 @@ import { DisposableCollection, Disposable } from '@theia/core/lib/common/disposa
 import { Message } from '@phosphor/messaging';
 import {
     TreeWidget, TreeNode, SelectableTreeNode, TreeProps, NodeProps, TREE_NODE_SEGMENT_CLASS,
-    TREE_NODE_SEGMENT_GROW_CLASS, TREE_NODE_INDENT_CLASS, defaultTreeProps
+    TREE_NODE_SEGMENT_GROW_CLASS, TREE_NODE_INDENT_CLASS
 } from '@theia/core/lib/browser/tree';
 import { ScmTreeModel } from './scm-tree-model';
 import { MenuModelRegistry, ActionMenuNode, CompositeMenuNode, MenuPath } from '@theia/core/lib/common/menu';
@@ -41,13 +41,8 @@ import { IconThemeService } from '@theia/core/lib/browser/icon-theme-service';
 import { ScmFileChangeGroupNode, ScmFileChangeFolderNode, ScmFileChangeNode } from './scm-tree-model';
 
 const scmHeaderLeftPadding = 0;
-const TREE_NODE_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-indent-padding-scm';
-const TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-first-indent-padding-scm';
-const scmTreeProps: TreeProps = {
-    ...defaultTreeProps,
-    expansionTogglePadding: 0,
-    nodeIndentWidthClassname: [TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS, TREE_NODE_INDENT_PADDING_SCM_CLASS]
-};
+export const TREE_NODE_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-indent-padding-scm';
+export const TREE_NODE_FIRST_INDENT_PADDING_SCM_CLASS = 'theia-tree-node-first-indent-padding-scm';
 
 @injectable()
 export class ScmTreeWidget extends TreeWidget {
@@ -77,7 +72,7 @@ export class ScmTreeWidget extends TreeWidget {
         @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer,
         @inject(ScmService) protected readonly scmService: ScmService,
     ) {
-        super(scmTreeProps, model, contextMenuRenderer);
+        super(props, model, contextMenuRenderer);
         this.id = ScmTreeWidget.ID;
         this.addClass('groups-outer-container');
     }
